@@ -1,4 +1,4 @@
-const uuid = require("uuid");
+const { nanoid } = require("nanoid");
 const Link = require("../models/Link");
 const LinkStats = require('../models/LinkStats')
 const errorResponse = (res, statusCode, message) => {
@@ -16,7 +16,7 @@ const createLink = async(req, res) => {
         if (!url || !remark) {
             return errorResponse(res, 400, "Destination Url and remark cannot be empty");
         }
-        const uniqueID = uuid.v4();
+        const uniqueID = nanoid(6);
         const shortUrl = `https://yourdomain.com/${uniqueID}`;
         const ipAddress = req.ip || req.headers['x-forwarded-for'];
         const userDevice = req.device.type;

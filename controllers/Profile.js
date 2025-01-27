@@ -39,6 +39,25 @@ const updateProfile = async(req, res) => {
         errorResponse(res, 500, "Server error. Please try again.");
     }
 };
+
+const getProfile = async(req, res) => {
+    try {
+        const { userId } = req.user;
+        const user = await User.findById(userId).select("name email mobileNo");
+        if (!user) {
+            return errorResponse(res, 404, "User not found.");
+        }
+        return res.status(200).json({
+            success: true,
+            message: "Profile fetched successfully.",
+            data: user,
+        });
+    } catch (error) {
+        console.error("Error in updating profile:", err);
+        errorResponse(res, 500, "Server error. Please try again.");
+    }
+}
+
 const deleteAccount = async(req, res) => {
     try {
         const { userId } = req.user;
@@ -64,4 +83,4 @@ const deleteAccount = async(req, res) => {
     }
 };
 
-module.exports = { updateProfile, deleteAccount }
+module.exports = { updateProfile, deleteAccount, getProfile }

@@ -39,6 +39,7 @@ const login = async(req, res) => {
                 token,
                 message: "Login successful",
                 userId: user._id.toString(),
+
             });
         } else {
             return errorResponse(res, 401, "Invalid credential..");
