@@ -1,4 +1,6 @@
 const { nanoid } = require("nanoid");
+const UAParser = require("ua-parser-js");
+const parser = new UAParser();
 const Link = require("../models/Link");
 const LinkStats = require('../models/LinkStats')
 const errorResponse = (res, statusCode, message) => {
@@ -8,31 +10,46 @@ const errorResponse = (res, statusCode, message) => {
     });
 };
 
+
+
+const getUserDeviceInfo = (req) => {
+    const userAgentString = req.headers["user-agent"];
+    parser.setUA(userAgentString);
+    const result = parser.getResult();
+    return {
+        browser: result.browser.name,
+        platform: result.os.name,
+        userAgent: userAgentString,
+    };
+};
 const createLink = async(req, res) => {
     try {
         const { url, remark, expiredAt } = req.body;
         const { userId } = req.user;
-        console.log(userId);
         if (!url || !remark) {
-            return errorResponse(res, 400, "Destination Url and remark cannot be empty");
+            return errorResponse(
+                res,
+                400,
+                "Destination Url and remark cannot be empty"
+            );
         }
+
+
+        let userDeviceInfo = getUserDeviceInfo(req);
         const uniqueID = nanoid(6);
-        const shortUrl = `https://yourdomain.com/${uniqueID}`;
-        const ipAddress = req.ip || req.headers['x-forwarded-for'];
-        const userDevice = req.device.type;
-        const userDeviceInfo = {
-            type: userDevice,
-            userAgent: req.headers['user-agent'],
-        };
+        console.log(process.env.FRONTEND_BASE_URL)
+        const shortUrl = `${process.env.FRONTEND_BASE_URL}/${uniqueID}`;
+        const ipAddress = req.ip || req.headers["x-forwarded-for"];
+        let device = userDeviceInfo.platform ? userDeviceInfo.platform : "Postman";
         await Link.create({
             url,
             shortUrl,
             userId,
             expiredAt: expiredAt ? expiredAt : null,
-            userDevice: userDeviceInfo ? userDeviceInfo.userAgent || userDevice : userDevice,
+            userDevice: device,
             ipAddress,
             remark,
-            uniqueId: uniqueID
+            uniqueId: uniqueID,
         });
         return res.status(201).json({
             success: true,
@@ -42,7 +59,8 @@ const createLink = async(req, res) => {
         console.error("Signup error:", err);
         errorResponse(res, 500, "Server error. Please try again.");
     }
-}
+};
+
 const editLink = async(req, res) => {
     try {
         const { id } = req.params;
@@ -130,7 +148,7 @@ const getAnalytics = async(req, res) => {
                 pageNo: pageNumber,
                 totalCount: totalLink,
                 items: links,
-            }
+            },
         });
     } catch (err) {
         console.error("Error in getAnalytics:", err);
@@ -235,30 +253,28 @@ const getAllLinks = async(req, res) => {
 const getUrl = async(req, res) => {
     try {
         const { id } = req.query;
-        const link = await Link.findOne({ uniqueId: id }).select("_id expiredAt url");
+        const link = await Link.findOne({ uniqueId: id }).select(
+            "_id expiredAt url"
+        );
         if (!link) {
-            return errorResponse(
-                res,
-                404,
-                "Invalid link.."
-            );
+            return errorResponse(res, 404, "Invalid link..");
         }
         const currentDate = new Date();
         if (link.expiredAt && currentDate > new Date(link.expiredAt)) {
             return errorResponse(res, 404, "Link has been expired...");
         }
         const userDevice = req.device.type;
-        await LinkStats.create({ linkId: link._id, clickDevice: userDevice })
+        await LinkStats.create({ linkId: link._id, clickDevice: userDevice });
         return res.status(200).json({
             success: true,
             message: "Fetched link details.",
-            url: link ? link.url : null
+            url: link ? link.url : null,
         });
     } catch (err) {
         console.error("Error in updating profile:", err);
         errorResponse(res, 500, "Server error. Please try again.");
     }
-}
+};
 
 module.exports = {
     createLink,
