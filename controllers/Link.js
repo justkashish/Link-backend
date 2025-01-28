@@ -2,15 +2,13 @@ const { nanoid } = require("nanoid");
 const UAParser = require("ua-parser-js");
 const parser = new UAParser();
 const Link = require("../models/Link");
-const LinkStats = require('../models/LinkStats')
+const LinkStats = require("../models/LinkStats");
 const errorResponse = (res, statusCode, message) => {
     return res.status(statusCode).json({
         success: false,
         message,
     });
 };
-
-
 
 const getUserDeviceInfo = (req) => {
     const userAgentString = req.headers["user-agent"];
@@ -34,10 +32,8 @@ const createLink = async(req, res) => {
             );
         }
 
-
         let userDeviceInfo = getUserDeviceInfo(req);
         const uniqueID = nanoid(6);
-        console.log(process.env.FRONTEND_BASE_URL)
         const shortUrl = `${process.env.FRONTEND_BASE_URL}/${uniqueID}`;
         const ipAddress = req.ip || req.headers["x-forwarded-for"];
         let device = userDeviceInfo.platform ? userDeviceInfo.platform : "Postman";
@@ -54,6 +50,10 @@ const createLink = async(req, res) => {
         return res.status(201).json({
             success: true,
             message: "Link Created Successfully..",
+            data: {
+                id: uniqueID,
+                shortUrl: shortUrl, // Include the shortened URL
+            },
         });
     } catch (err) {
         console.error("Signup error:", err);
@@ -282,5 +282,5 @@ module.exports = {
     deleteLink,
     getAnalytics,
     getAllLinks,
-    getUrl
+    getUrl,
 };
