@@ -280,32 +280,6 @@ const getUrl = async(req, res) => {
     }
 };
 
-// const linkDetails = async(req, res) => {
-
-//     try {
-//         const { id } = req.params;
-
-//         // Find the link by ID
-//         const link = await Link.findById(id);
-
-//         if (!link) {
-//             return res.status(404).json({ success: false, message: "Link not found" });
-//         }
-
-//         res.status(200).json({
-//             success: true,
-//             data: {
-//                 url: link.originalLink,
-//                 remark: link.remarks,
-//                 expirationDate: link.expirationDate,
-//             },
-//         });
-//     } catch (error) {
-//         console.error("Error fetching link details :", error);
-//         res.status(500).json({ success: false, message: "Server Error" });
-//     }
-// };
-
 module.exports = {
     createLink,
     editLink,
