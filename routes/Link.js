@@ -8,6 +8,6 @@ router.put('/edit/:id', auth, editLink);
 router.delete('/delete/:id', auth, deleteLink);
 router.get('/getAnalytics', auth, getAnalytics);
 router.get('/getAllLinks', auth, getAllLinks);
-router.get('/getUrl', getUrl);
+router.get('/', getUrl);
 // router.get('/:id', auth, linkDetails);
 module.exports = router;

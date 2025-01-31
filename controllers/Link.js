@@ -191,7 +191,7 @@ const getAllLinks = async(req, res) => {
         // Fetch links from the database
         const links = await Link.find(query)
             .sort({ createdAt: timestampDirection }) // Sorting by 'createdAt' timestamp first
-            .select("createdAt url shortUrl ipAddress userDevice remark expiredAt") // Select necessary fields
+            .select("_id createdAt url shortUrl ipAddress userDevice remark expiredAt") // Select necessary fields
             .skip(skip)
             .limit(limitNumber)
             .lean();
@@ -215,7 +215,7 @@ const getAllLinks = async(req, res) => {
         }
 
         const linkIds = updatedLinks.map((link) => link._id.toString());
-
+        console.log(linkIds);
         const clickCounts = await LinkStats.aggregate([
             { $match: { linkId: { $in: linkIds } } },
             {
@@ -225,6 +225,7 @@ const getAllLinks = async(req, res) => {
                 },
             },
         ]);
+        console.log(clickCounts);
         updatedLinks.forEach((link) => {
             const clickData = clickCounts.find(
                 (click) => click._id.toString() === link._id.toString()
@@ -266,10 +267,6 @@ const getUrl = async(req, res) => {
 
         const userDevice = req.device.type;
         await LinkStats.create({ linkId: link._id, clickDevice: userDevice });
-
-
-        // Set headers to prevent caching and ensure fresh data
-        res.setHeader('Cache-Control', 'no-store');
 
         // Return the original URL to the frontend
         return res.status(200).json({
