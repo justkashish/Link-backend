@@ -214,7 +214,7 @@ const getAllLinks = async(req, res) => {
             });
         }
 
-        const linkIds = updatedLinks.map((link) => link._id);
+        const linkIds = updatedLinks.map((link) => link._id.toString());
 
         const clickCounts = await LinkStats.aggregate([
             { $match: { linkId: { $in: linkIds } } },
@@ -263,18 +263,51 @@ const getUrl = async(req, res) => {
         if (link.expiredAt && currentDate > new Date(link.expiredAt)) {
             return errorResponse(res, 404, "Link has been expired...");
         }
+
         const userDevice = req.device.type;
         await LinkStats.create({ linkId: link._id, clickDevice: userDevice });
+
+
+        // Set headers to prevent caching and ensure fresh data
+        res.setHeader('Cache-Control', 'no-store');
+
+        // Return the original URL to the frontend
         return res.status(200).json({
             success: true,
             message: "Fetched link details.",
-            url: link ? link.url : null,
+            url: link.url, // The original URL to redirect to
         });
     } catch (err) {
         console.error("Error in updating profile:", err);
         errorResponse(res, 500, "Server error. Please try again.");
     }
 };
+
+// const linkDetails = async(req, res) => {
+
+//     try {
+//         const { id } = req.params;
+
+//         // Find the link by ID
+//         const link = await Link.findById(id);
+
+//         if (!link) {
+//             return res.status(404).json({ success: false, message: "Link not found" });
+//         }
+
+//         res.status(200).json({
+//             success: true,
+//             data: {
+//                 url: link.originalLink,
+//                 remark: link.remarks,
+//                 expirationDate: link.expirationDate,
+//             },
+//         });
+//     } catch (error) {
+//         console.error("Error fetching link details :", error);
+//         res.status(500).json({ success: false, message: "Server Error" });
+//     }
+// };
 
 module.exports = {
     createLink,
