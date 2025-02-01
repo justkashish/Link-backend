@@ -33,9 +33,13 @@ const createLink = async(req, res) => {
         }
 
         let userDeviceInfo = getUserDeviceInfo(req);
+        console.log(userDeviceInfo);
         const uniqueID = nanoid(6);
         const shortUrl = `${process.env.FRONTEND_BASE_URL}/${uniqueID}`;
         const ipAddress = req.ip || req.headers["x-forwarded-for"];
+        const userIP =
+            req.headers["x-forwarded-for"] ? .split(",")[0] || req.socket.remoteAddress;
+        console.log("User IP:", userIP);
         let device = userDeviceInfo.platform ? userDeviceInfo.platform : "Postman";
         await Link.create({
             url,
@@ -43,7 +47,7 @@ const createLink = async(req, res) => {
             userId,
             expiredAt: expiredAt ? expiredAt : null,
             userDevice: device,
-            ipAddress,
+            ipAddress: ipAddress == "::1" ? "127.0.0.1" : ipAddress,
             remark,
             uniqueId: uniqueID,
         });
