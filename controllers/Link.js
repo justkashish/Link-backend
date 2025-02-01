@@ -206,7 +206,7 @@ const getAllLinks = async(req, res) => {
         const updatedLinks = links.map((link) => {
             // Determine if the link is expired (if expiredAt exists and current date is past it)
             if (link.expiredAt && currentDate > new Date(link.expiredAt)) {
-                link.status = "InActive"; // Mark as inactive if expired
+                link.status = "Inactive"; // Mark as inactive if expired
             } else {
                 link.status = "Active"; // Otherwise, mark as active
             }
